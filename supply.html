@@ -109,133 +109,32 @@
     </div>
 
 
-    <p style="text-align:center;">CREATE TABLE Publisher(  <br>
-pub_id INT NOT NULL,<br>
-name VARCHAR(15) NOT NULL,<br>
-address VARCHAR(15),<br>
-PRIMARY KEY(pub_id));<br><br>
+    <p style="text-align:center;">1.select sname,past_no,cname<br>
+from((((supplier natural join supply)natural join manufaturedby)natural join project)natural join company)<br>
+where pname='abc';<br><br>
 
-CREATE TABLE Book(<br>
-book_id INT NOT NULL,<br>
-title VARCHAR(15) NOT NULL,<br>
-price INT,<br>
-available INT,<br>
-pub_id INT,<br>
-PRIMARY KEY(book_id),<br>
-FOREIGN KEY(pub_id) REFERENCES publisher(pub_id)ON DELETE SET NULL);<br><br>
+2.select s.snum,s.sname<br>
+from supplier s<br>
+where not exists(select post_no<br>
+			from manufactured by<br>
+			where cnum='2')<br>
+minus<br>
+select part_no<br>
+from supply s1<br>
+where s1.snum=s.snum);<br><br>
 
-CREATE TABLE Book_Author(<br>
-book_id INT NOT NULL,<br>
-author VARCHAR(19),<br>
-PRIMARY KEY(book_id,author),<br>
-FOREIGN KEY(book_id) REFERENCES Book(book_id)ON DELETE SET NULL);<br><br>
+3.create view overallprice as(<br>
+select pnumber,part_no,(qty*price) as total_cost<br>
+from supply natural join part);<br><br>
 
-CREATE TABLE Member(<br>
-member_id INT NOT NULL,<br>
-name VARCHAR(10) NOT NULL,<br>
-mem_date DATE,<br>
-expiry_date DATE,<br>
-mem_type VARCHAR(10),<br>
-address VARCHAR(15),<br>
-PRIMARY KEY(member_id));<br><br>
+select pnumber,pname,total_cost<br>
+from (overallprice natural join project)<br>
+where total_cost >=ALL(select total_cost from overallprice);<br><br>
 
-CREATE TABLE Borrowed_By(<br>
-mem_id INT NOT NULL,<br>
-book_id INT NOT NULL,<br>
-return_date DATE,<br>
-due_date DATE,<br>
-issue DATE,<br>
-PRIMARY KEY(mem_id,book_id),<br>
-FOREIGN KEY(mem_id)REFERENCES Member(member_id)ON DELETE SET NULL,<br>
-FOREIGN KEY(book_id)REFERENCES Book(book_id)ON DELETE SET NULL);<br><br>
-
-CREATE TABLE Supplier(<br>
-sup_id INT NOT NULL,<br>
-name VARCHAR(10),<br>
-address VARCHAR(10),<br>
-PRIMARY KEY(sup_id));<br><br>
-
-CREATE TABLE Supplied_by(<br>
-book_id INT NOT NULL,<br>
-sup_id INT NOT NULL,<br>
-PRIMARY KEY(book_id,sup_id),<br>
-FOREIGN KEY(book_id)REFERENCES Book(book_id)ON DELETE SET NULL,<br>
-FOREIGN KEY(sup_id)REFERENCES Supplier(sup_id)ON DELETE SET NULL);<br><br>
-
-INSERT INTO Publisher VALUES(1001,'Manning','London');<br>
-INSERT INTO Publisher VALUES(1002,'ABC Publishing','Hampton');<br>
-INSERT INTO Publisher VALUES(1003,'PHI Learning','Colombia');<br>
-INSERT INTO Publisher VALUES(1004,'Bloomsbury','London');<br>
-INSERT INTO Publisher VALUES(1005,'Sapna','India');<br><br>
-
-INSERT INTO Book VALUES(2001,'Harry Potter',664,3,1004);<br>
-INSERT INTO Book VALUES(2002,'BCD book',387,1,1001);<br>
-INSERT INTO Book VALUES(2003,'Anne Frank',714,5,1002);<br>
-INSERT INTO Book VALUES(2006,'HAHa ink',914,5,1004);<br><br>
-
-INSERT INTO Book_Author VALUES(2002,'Nandini');<br>
-INSERT INTO Book_Author VALUES(2002,'Pragati');<br>
-INSERT INTO Book_Author VALUES(2001,'J.K Rowling');<br><br>
-
-INSERT INTO Member VALUES(3192,'Spoorthi','12-JAN-2009','8-JUN-2023','Gold','DWD');<br>
-INSERT INTO Member VALUES(3110,'Bhavana','21-FEB-2012','18-MAY-2022','Silver','GHY');<br>
-INSERT INTO Member VALUES(3002,'Tariq','4-APR-2005','12-JUL-2025','Platinum','BLR');<br>
-INSERT INTO Member VALUES(3020,'Shreya','8-DEC-2010','22-AUG-2023','Diamond','PUN');<br><br>
-
-INSERT INTO Borrowed_By VALUES(3192,2002,'16-APR-2022','18-APR-2022','26-MAR-2022');<br>
-INSERT INTO Borrowed_By VALUES(3110,2001,'17-APR-2022','20-APR-2022','28-MAR-2022');<br>
-INSERT INTO Borrowed_By VALUES(3110,2003,'17-APR-2022','20-APR-2022','28-MAR-2022');<br>
-INSERT INTO Borrowed_By VALUES(3110,2006,'17-APR-2022','20-APR-2022','28-MAR-2022');<br>
-INSERT INTO Borrowed_By VALUES(3002,2001,'19-MAY-2022','25-MAY-2022','20-APR-2022');<br><br>
-
-INSERT INTO Supplier VALUES(4911,'Ravi','BIHAR');<br>
-INSERT INTO Supplier VALUES(4002,'Chavan','CHENNAI');<br>
-INSERT INTO Supplier VALUES(4192,'Pari','MUMBAI');<br><br>
-
-INSERT INTO Supplied_by VALUES(2001,4192);<br>
-INSERT INTO Supplied_by VALUES(2002,4002);<br>
-INSERT INTO Supplied_by VALUES(2003,4192);<br>
-INSERT INTO Supplied_by VALUES(2006,4192);<br><br>
-
-SQL=><br>
-a) List the sup-id and name who supplies all the books published by 'Sapna Book House' publisher.<br>
- > select s.sup_id<br>
-   from Supplier s<br>
-   where not exists((select book_id <br>
-				from book natural join publisher<br>
-				where name='Sapna Book House')<br>
-			minus<br>
-			(select book_id<br>
-			from supplied_by s1<br>
-			where s1.sup_id=s.sup_id));<br><br>
-
-
-b) List the Member-id and name of those who have not borrowed any book since there registration.<br>
- > select m.member_id,m.name<br>
-   from member m<br>
-   where not exists(select m1.mem_id<br>
-			   from Borrowed_By m1<br>
-			   where m1.mem_id=m.member_id);<br><br>
-
-c) List the Member-id and name of those who have taken more than two books.<br>
- > select member_id,name<br>
-   from member<br>
-   where member_id in(select mem_id<br>
-				from borrowed_by<br>
-				group by(mem_id)<br>
-				having count(*)>2);<br><br>
-
-d) List the Book-id and title which was borrowed maximum number of times.<br>
- > create view max_borrow as<br>
-	(select book_id,title,count(*) as times_borrowed<br>
-	 from (book natural join borrowed_by)<br>
-	 group by(book_id,title));<br><br>
-
-select book_id,title<br>
-from max_borrow<br>
-where times_borrowed>=ALL(select times_borrowed from max_borrow);<br><br>
-</p>
-
+4.select snum,sname<br>
+from supplier<br>
+where snum in (select snum from<br>
+group by (snum) having count (*)>2);<br><br></p>
 
 
 
