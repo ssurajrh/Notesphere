@@ -106,6 +106,117 @@
     <a href="hospital.html" class="btn btn-lg btn-dark">Hospital</a>
     <a href="student.html" class="btn btn-lg btn-light">Student</a>
 
+    <p style="text-align:center;">create table patient<br>
+(ssn int not null,<br>
+ name varchar(20) not null,<br>
+ insurance int not null,<br>
+ date_admitted date not null,<br>
+ date_checked date not null,<br>
+ primary key(ssn,date_admitted));<br><br>
+
+
+create table testlog<br>
+(tdate date not null,<br>
+ time char not null,<br>
+ result varchar(20) not null,<br>
+ ssn int not null,<br>
+ testid int not null,<br>
+ dssn int not null,<br>
+ date_admitted date not null,<br>
+ primary key(ssn,date_admitted,testid,dssn),<br>
+ foreign key (ssn,date_admitted) references patient(ssn,date_admitted),<br>
+ foreign key(testid ) references test(test_id),<br>
+ foreign key(dssn) references doctor(dssn));<br><br>
+
+
+create table test<br>
+(test_id int not null,<br>
+ test_name varchar(20) not null,<br>
+ primary key(test_id));<br><br>
+
+create table doctor<br>
+(dssn int not null,<br>
+ name varchar(20) not null,<br>
+ specilization char not null,<br>
+ primary key(dssn)); <br><br>
+
+create table dr_patient<br>
+(dpssn int not null,<br>
+ dssn int not null,<br>
+ date_admitted date not null,<br>
+ primary key(dpssn,dssn),<br>
+ foreign key(dpssn,date_admitted) references patient(ssn,date_admitted),<br>
+ foreign key(dssn) references doctor(dssn));<br><br>
+
+//inserting<br>
+insert into patient values(1001,'ashish',20290,'20-jan-2012','21-jan-2012');<br>
+insert into patient values(1002,'nandu',20176,'20-mar-2021','25-mar-2021');<br>
+insert into patient values(1001,'ashish',20290,'19-feb-2012','26-feb-2012');<br>
+insert into patient values(1003,'spoorthi',21860,'20-aug-2012','21-sep-2012');<br>
+insert into patient values(1004,'pragati',20815,'23-aug-2020','28-aug-2020');<br>
+insert into patient values(1001,'ashish',20290,'23-aug-2021','21-sep-2021');<br>
+insert into patient values(1003,'spoorthi',21860,'23-dec-2021','24-dec-2021');<br><br>
+
+
+
+insert into test values(123567,'malaria');<br>
+insert into test values(123778,'diabetes');<br>
+insert into test values(123213,'bp');<br>
+insert into test values(123568,'dengue');<br><br>
+
+
+insert into doctor values(986,'upk','g');<br>
+insert into doctor values(123,'Dr.Joshi','n');<br>
+insert into doctor values(657,'jassi','r');<br>
+
+insert into dr_patient values(1001,657,'20-jan-2012');<br><br>
+
+insert into dr_patient values(1002,986,'20-mar-2021');<br>
+insert into dr_patient values(1003,123,'20-aug-2012');<br><br>
+
+
+
+
+insert into testlog values('20-jan-2012','1','positive',1001,123213,657,'20-jan-2012');<br><br>
+
+
+
+
+
+
+//queries<br><br>
+1)select distinct p.ssn , p.name<br>
+from patient p<br>
+where p.ssn in   (select  p1.ssn<br>
+ 		  from patient p1<br>
+		  where p1.date_admitted like '%12'<br>
+  		  group by (p1.ssn)<br>
+	          having count(*)>=2);<br><br>
+
+2)select ssn, name<br>
+  from (patient natural join testlog)<br>
+  where date_admitted = tdate;<br><br>
+
+3)create view max_test as<br>
+(select testid , count(*) as max_times<br>
+ from testlog<br>
+ group by(testid));<br><br>
+
+select testid<br>
+from max_test<br>
+where max_times >= all(select max_times<br>
+ 			from max_test);<br><br>
+
+4)select d.name<br>
+from doctor d<br>
+where not exists( (select dpssn<br>
+			from (doctor natural join dr_patient ) <br>
+			where name = 'Dr.Joshi')<br>
+minus <br>
+(select p.dpssn<br>
+from dr_patient p<br>
+where d.dssn = p.dssn));<br><br>
+                                           </p>
 
 
 

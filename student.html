@@ -106,7 +106,112 @@
     <a href="hospital.html" class="btn btn-lg btn-dark">Hospital</a>
     <a href="student.html" class="btn btn-lg btn-light">Student</a>
 
+    <p style="text-align:center;">CREATE TABLE STUDENT1(<br>
+sid varchar(20) NOT NULL,<br>
+name varchar(20) NOT NULL,<br>
+program varchar(20),<br>
+PRIMARY KEY (sid));<br><br>
 
+CREATE TABLE INSTRUCTOR(<br>
+iid varchar(20) NOT NULL,<br>
+name varchar(20) NOT NULL,<br>
+dept varchar(20),<br>
+title varchar(20),<br>
+PRIMARY KEY(iid));<br><br>
+
+CREATE TABLE COURSE1(<br>
+courseno varchar(20) NOT NULL,<br>
+title varchar(20) NOT NULL,<br>
+credits varchar(20),<br>
+syllabus varchar(20),<br>
+prerequistes varchar(20),<br>
+PRIMARY KEY(courseno));<br><br>
+
+CREATE TABLE COURSE_OFFERING(<br>
+courseno varchar(20) NOT NULL,<br>
+year int NOT NULL,<br>
+sem int NOT NULL,<br>
+room varchar(20),<br>
+primary key(courseno,year,sem),<br>
+foreign key(courseno) references course1(courseno) on delete SET NULL);<br><br>
+
+CREATE TABLE ENROLL1(<br>
+sid varchar(20) NOT NULL,<br>
+courseno varchar(20) NOT NULL,<br>
+year int NOT NULL,<br>
+sem int NOT NULL,<br>
+grade char(1),<br>
+primary key(sid,courseno,year,sem),<br>
+foreign key(sid) references student1(sid) on delete set null,<br>
+foreign key(courseno,year,sem) references course_offering(courseno,year,sem) on delete set null);<br><br>
+
+CREATE TABLE TEACHES(<br>
+iid varchar(20) NOT NULL,<br>
+courseno varchar(20) NOT NULL,<br>
+year int NOT NULL,<br>
+sem int NOT NULL,<br>
+primary key(iid,courseno,year,sem),<br>
+foreign key(iid) references instructor(iid) on delete set null,<br>
+foreign key(courseno,year,sem) references course_offering(courseno,year,sem) on delete set null);<br><br>
+
+INSERT INTO STUDENT1 VALUES('S1', 'Savita', 'P1'); <br>
+INSERT INTO STUDENT1 VALUES('S2', 'Rajeev', 'P2');<br><br>
+
+INSERT INTO INSTRUCTOR VALUES('I1', 'Gaytri', 'CS', 'Algo'); <br>
+INSERT INTO INSTRUCTOR VALUES('I2', 'Soham', 'IS', 'Algo'); <br><br>
+
+INSERT INTO COURSE1 VALUES('C1', 'Algo', '2', 'S1', 'DSA');<br>
+INSERT INTO COURSE1 VALUES('C2', 'OS', '4', 'S1', 'Unix');<br><br>
+
+INSERT INTO COURSE_OFFERING VALUES('C1', 2012, 3, 'R1');<br>
+INSERT INTO COURSE_OFFERING VALUES('C1', 2011, 5, 'R2');<br>
+INSERT INTO COURSE_OFFERING VALUES('C2', 2010, 3, 'R1');<br><br>
+
+
+INSERT INTO ENROLL1 VALUES('S1', 'C1', 2012, 3, 'A');<br>
+INSERT INTO ENROLL1 VALUES('S1', 'C1', 2011, 5, 'S');<br>
+INSERT INTO ENROLL1 VALUES('S1', 'C2', 2010, 3, 'S');<br>
+INSERT INTO ENROLL1 VALUES('S2', 'C2', 2010, 3, 'S');<br>
+INSERT INTO ENROLL1 VALUES('S2', 'C1', 2012, 3, 'A');<br><br>
+
+INSERT INTO TEACHES VALUES('I1', 'C1', 2012, 3);<br>
+INSERT INTO TEACHES VALUES('I2', 'C1', 2011, 5);<br>
+INSERT INTO TEACHES VALUES('I1', 'C2', 2010, 3);<br><br>
+
+QUE1. List studentid, courseno and prerequisties.<br>
+->    select S.sid, C.courseno, C.prerequistes<br>
+      from student1 S, course1 C, enroll1 E<br>
+      where S.sid=E.sid AND E.courseno=C.courseno ;<br><br>
+
+Que2. List stuids, who have taken all the courses that are offered in a particular sem.<br>
+->    select s.sid<br>
+	from student1 s <br>
+	where NOT EXISTS<br>
+	((select courseno<br>
+	  from course_offering<br>
+	  where sem=3)<br>
+	minus<br>
+	 (select e.courseno<br>
+	  from enroll1 e<br>
+	  where s.sid=e.sid));<br><br>
+
+Que3. List the name of instructor who have taken more than 2 courses in a particular sem.<br>
+->    select i.iid, i.name<br>
+	from instructor i<br>
+	where i.iid IN<br>
+	      (select t.iid<br>
+		 from teaches t<br>
+		 where sem=3<br>
+		 group by t.iid<br>
+		 having count(*)=2);<br><br>
+
+Que4. List the courseno, course name which were offered but were not taken in the year 2012.<br>
+-> 	select c.courseno, c.title<br>
+	from course1 c, course_offering c1<br>
+	where c1.courseno = c.courseno and c1.year NOT IN<br>
+		(select year<br>
+		 from course_offering<br>
+		 where year=2012);<br><br></p>
 
 
 
